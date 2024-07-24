@@ -9,11 +9,6 @@ import graphbrain
 import tempfile
 import os
 
-def print_versions():
-    print(f"Python version: {sys.version}")
-    print(f"spaCy version: {spacy.__version__}")
-    print(f"GraphBrain version: {graphbrain.__version__}")
-
 def analyze_text(texts, batch_size=100):
     # Create a parser
     parser = create_parser(lang='en')
@@ -61,10 +56,5 @@ def analyze_text(texts, batch_size=100):
 
 
 sample_text = examples
-
-# Example usage
-
-
-print_versions()
 
 analyze_text(sample_text)
