@@ -7,7 +7,7 @@ def analyze_text(texts):
     parser = create_parser(lang='en')
     
     # Create a TxtReader
-    reader = TxtReader(parser)
+    reader = TxtReader(parser=parser, lang='en')
     
     # Process texts
     edges = []
