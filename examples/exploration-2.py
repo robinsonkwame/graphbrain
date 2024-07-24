@@ -1,20 +1,48 @@
+import os
 from graphbrain import hgraph
 from graphbrain.patterns import PatternCounter
 from graphbrain.hyperedge import Atom
 
+"""
+Assume we created a db with the text command, e.g.
+
+    graphbrain txt --infile examples/text/negative.txt --hg examples/text_n.db --lang en
+"""
+
 # Open the hypergraph
 hg = hgraph('examples/text.db')
+
+# Check database file size
+print(f"Database file size: {os.path.getsize('examples/text.db')} bytes")
+
+# Count edges manually
+edge_count = sum(1 for _ in hg.all())
+primary_edge_count = sum(1 for edge in hg.all() if hg.is_primary(edge))
+
+print(f"Number of edges: {edge_count}")
+print(f"Number of primary edges: {primary_edge_count}")
+
+# Print some sample edges
+print("\nSample edges:")
+for edge in list(hg.all())[:5]:
+    print(edge)
 
 # Create a PatternCounter
 pc = PatternCounter()
 
 # Count patterns for all primary edges
-for edge in hg.all():
-    if hg.is_primary(edge):
-        pc.count(edge)
+try:
+    for edge in hg.all():
+        if hg.is_primary(edge):
+            pc.count(edge)
+except Exception as e:
+    print(f"Error occurred while processing edges: {e}")
+
+print(f"\nTotal number of edges processed: {edge_count}")
+print(f"Number of primary edges: {primary_edge_count}")
 
 # Print the top 10 most common patterns
-print("Top 10 most common patterns:")
+print("\nTop 10 most common patterns:")
 for pattern, count in pc.patterns.most_common(10):
     print(f"{pattern}: {count}")
 

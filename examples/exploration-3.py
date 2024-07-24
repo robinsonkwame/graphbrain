@@ -1,50 +1,41 @@
 from graphbrain import hgraph, hedge
-from graphbrain.parsers import create_parser
 
-# Create a hypergraph and parser
-hg = hgraph('example.db')
-parser = create_parser(lang='en')
+# Create a hypergraph from the existing database
+hg = hgraph('examples/both.db')
 
-# Define the pattern for part-whole relationships
-pattern = hedge('(is/Pd * (of/T */C))')
+# Complex Pattern with variables
+complex_pattern = hedge("""
+(is/Pd.sc.|f--3s-/en
+  (var */Cc.s PART)
+  (var
+    (any
+      (of/Br.ma/en (var */Cc.s TYPE) (var */Cc.s WHOLE))
+      (within/Br.ma/en (var */Cc.s TYPE) (var */Cc.s WHOLE))
+      (in/Br.ma/en (var */Cc.s TYPE) (var */Cc.s WHOLE))
+    )
+    RELATION))
+""")
 
-positive_examples = [
-    "The wheel is part of the car.",
-    "A chapter is a component of a book.",
-    "The heart is an organ within the human body.",
-    "The kitchen is a room in the house.",
-    "The CPU is an essential element of a computer."
-]
+def process_pattern(pattern, version):
+    print(f"\nProcessing with {version}:")
+    print(f"Pattern: {pattern}")
+    
+    matches = list(hg.match(pattern))
+    
+    if matches:
+        print(f"Number of matches: {len(matches)}")
+        for i, match in enumerate(matches):
+            print(f"\nMatch {i + 1}:")
+            print(f"  Full match: {match[0]}")
+            # Print variable bindings
+            for var_dict in match[1]:
+                for var, value in var_dict.items():
+                    print(f"  {var}: {value}")
+    else:
+        print("No matches found.")
 
-negative_examples = [
-    "The painted wall shined blue.",
-    "Water boils at 100 degrees Celsius.",
-    "Dogs are loyal companions.",
-    "The Eiffel Tower is located in Paris.",
-    "Photosynthesis is a process used by plants to create energy."
-]
-
-def process_examples(examples):
-    for example in examples:
-        parse_results = parser.parse(example)
-        if parse_results['parses']:
-            edge = parse_results['parses'][0]['main_edge']
-            matches = hg.match(pattern, edge)
-            if matches:
-                print(f"Matched: {example}")
-                for match in matches:
-                    print(f"  PART: {match[1]}")
-                    print(f"  WHOLE: {match[2][1]}")
-            else:
-                print(f"Did not match: {example}")
-        else:
-            print(f"Failed to parse: {example}")
-
-print("Processing positive examples:")
-process_examples(positive_examples)
-
-print("\nProcessing negative examples:")
-process_examples(negative_examples)
+# Process with complex pattern
+process_pattern(complex_pattern, "Complex Pattern")
 
 # Close the hypergraph when done
 hg.close()

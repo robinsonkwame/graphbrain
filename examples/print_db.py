@@ -2,7 +2,8 @@ import os
 import sqlite3
 
 # Database file path
-db_path = 'examples/text.db'
+#db_path = 'examples/debug_text.db'
+db_path = 'examples/text_n.db'
 
 # Check if the database file exists
 if not os.path.exists(db_path):

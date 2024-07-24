@@ -1,0 +1,5 @@
+The wheel is part of the car.
+A chapter is a component of a book.
+The heart is an organ within the human body.
+The kitchen is a room in the house.
+The CPU is an essential element of a computer.
