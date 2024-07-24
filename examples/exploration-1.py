@@ -1,19 +1,18 @@
 from graphbrain import *
 from graphbrain.parsers import create_parser
-from graphbrain.hypergraph import Hypergraph
 
 def analyze_text(text):
     # Parse the text
     parser = create_parser(lang='en')
     parses = list(parser.parse(text))
     
-    # Extract hypergraph
-    hg = Hypergraph()
+    # Create a knowledge graph
+    kg = KnowledgeGraph()
     for parse in parses:
-        hg.add(parse)
+        kg.add(parse)
     
     # Find all edges (relationships)
-    edges = list(hg.all())
+    edges = list(kg.all())
     
     # Print all edges
     for edge in edges:
