@@ -19,7 +19,7 @@ for pattern, count in pc.patterns.most_common(10):
     print(f"{pattern}: {count}")
 
 # Print total number of unique patterns
-print(f"\nTotal unique patterns: {len(pc.patterns.counts)}")
+print(f"\nTotal unique patterns: {len(pc.patterns)}")
 
 # Analyze atom types
 atom_types = {}
