@@ -1,12 +1,20 @@
-import graphbrain
-from graphbrain import *
+from graphbrain import hypergraph
+from graphbrain.parsers import create_parser
+from graphbrain.processors import names
 
 def analyze_text(text):
-    # Parse the text
-    parser = graphbrain.parse_en(text)
+    # Create a parser
+    parser = create_parser(lang='en')
     
-    # Extract hypergraph
-    hg = parser.hypergraph()
+    # Parse the text
+    parses = parser.parse(text)
+    
+    # Create a hypergraph
+    hg = hypergraph.Hypergraph()
+    
+    # Add parsed edges to the hypergraph
+    for parse in parses:
+        hg.add(parse['main_edge'])
     
     # Find all edges (relationships)
     edges = list(hg.all())
@@ -14,12 +22,11 @@ def analyze_text(text):
     # Print all edges
     for edge in edges:
         print(f"Edge: {edge}")
-        print(f"  Main concepts: {edge.main_concepts()}")
-        print(f"  Connector: {edge.connector()}")
+        print(f"  Main concepts: {names.main_concepts(edge)}")
+        print(f"  Connector: {edge[0] if len(edge) > 0 else 'N/A'}")
         print()
 
     # Example of finding specific types of relationships
-    # This is a simplified example and may need to be adapted based on your specific needs
     tool_material_location_edges = [
         edge for edge in edges 
         if any(concept in str(edge).lower() for concept in ['tool', 'material', 'location'])
