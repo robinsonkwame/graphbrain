@@ -10,31 +10,30 @@ def print_versions():
     print(f"Python version: {sys.version}")
     print(f"spaCy version: {spacy.__version__}")
 
-def analyze_text(texts):
+def analyze_text(texts, batch_size=100):
     # Create a parser
     parser = create_parser(lang='en')
     
-    for text in texts:
-        print(f"\nAnalyzing text: {text}")
-        # Parse the text
-        parse_result = parser.parse(text)
+    # Process texts in batches
+    for i in range(0, len(texts), batch_size):
+        batch = texts[i:i+batch_size]
+        print(f"\nProcessing batch {i//batch_size + 1}")
         
-        # Print the parsed result
-        #print(f"Parsed result: {parse_result}")
-        
-        # Process each parse in the result
-        for parse in parse_result['parses']:
-            main_edge = parse['main_edge']
-            #print(f"\nMain edge: {main_edge}")
-            #print(f"  Main concepts: {names.main_concepts(main_edge)}")
-            #print(f"  Connector: {main_edge[0] if len(main_edge) > 0 else 'N/A'}")
+        for text in batch:
+            print(f"\nAnalyzing text: {text[:50]}...")  # Print first 50 characters
+            # Parse the text
+            parse_result = parser.parse(text)
             
-            # Example of finding specific types of relationships
-            if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
-                print("\nRelationships involving tools, materials, or locations:")
-                print(f"  {main_edge}")
+            # Process each parse in the result
+            for parse in parse_result['parses']:
+                main_edge = parse['main_edge']
+                
+                # Example of finding specific types of relationships
+                if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
+                    print("Relationships involving tools, materials, or locations:")
+                    print(f"  {main_edge}")
         
-        print()
+        print(f"Finished processing batch {i//batch_size + 1}")
 
 # Example usage
 sample_text = [
