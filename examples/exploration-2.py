@@ -15,11 +15,11 @@ for edge in hg.all():
 
 # Print the top 10 most common patterns
 print("Top 10 most common patterns:")
-for pattern, count in pc.pattern_counts.most_common(10):
+for pattern, count in pc.patterns.most_common(10):
     print(f"{pattern}: {count}")
 
 # Print total number of unique patterns
-print(f"\nTotal unique patterns: {len(pc.pattern_counts)}")
+print(f"\nTotal unique patterns: {len(pc.patterns.counts)}")
 
 # Analyze atom types
 atom_types = {}
