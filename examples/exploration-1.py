@@ -1,5 +1,6 @@
 from graphbrain import *
 from graphbrain.parsers import create_parser
+from graphbrain.hypergraph import Hypergraph
 
 def analyze_text(text):
     # Parse the text
