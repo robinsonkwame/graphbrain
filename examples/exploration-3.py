@@ -27,15 +27,18 @@ negative_examples = [
 def process_examples(examples):
     for example in examples:
         parse_results = parser.parse(example)
-        edge = parse_results['main_edge']
-        matches = hg.match(pattern, edge)
-        if matches:
-            print(f"Matched: {example}")
-            for match in matches:
-                print(f"  PART: {match[1]}")
-                print(f"  WHOLE: {match[2][1]}")
+        if parse_results['parses']:
+            edge = parse_results['parses'][0]['main_edge']
+            matches = hg.match(pattern, edge)
+            if matches:
+                print(f"Matched: {example}")
+                for match in matches:
+                    print(f"  PART: {match[1]}")
+                    print(f"  WHOLE: {match[2][1]}")
+            else:
+                print(f"Did not match: {example}")
         else:
-            print(f"Did not match: {example}")
+            print(f"Failed to parse: {example}")
 
 print("Processing positive examples:")
 process_examples(positive_examples)
