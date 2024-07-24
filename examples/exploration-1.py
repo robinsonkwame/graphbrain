@@ -13,12 +13,12 @@ def analyze_text(texts, batch_size=100):
     # Create a parser
     parser = create_parser(lang='en')
     
-    # Create a temporary directory for the hypergraph
-    with tempfile.TemporaryDirectory() as temp_dir:
-        db_path = os.path.join(temp_dir, 'example_db')
+    # Create a temporary file for the SQLite database
+    with tempfile.NamedTemporaryFile(suffix='.db') as temp_file:
+        db_path = temp_file.name
         
-        # Create a hypergraph
-        hg = hgraph(f'leveldb://{db_path}')
+        # Create a hypergraph using SQLite
+        hg = hgraph(f'sqlite://{db_path}')
     
     # Process texts in batches
     for i in range(0, len(texts), batch_size):
