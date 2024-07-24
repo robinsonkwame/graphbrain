@@ -34,29 +34,21 @@ def analyze_text(texts, batch_size=100):
                 
                 # Add the main edge to the hypergraph
                 hg.add(main_edge)
-                
-                print(f"Main edge: {main_edge}")
-                
-                # Analyze the structure of the main edge
-                if main_edge.type() == 'R':
-                    predicate = main_edge[0]
-                    print(f"Predicate: {predicate}")
-                    
-                    # Check for argument roles
-                    if isinstance(predicate, str) and '.' in predicate:
-                        _, roles = predicate.split('.', 1)
-                        print(f"Argument roles: {roles}")
-                    
-                    # Analyze arguments
-                    for i, arg in enumerate(main_edge[1:], 1):
-                        print(f"Argument {i}: {arg} (type: {arg.type()})")
-                
-                # Example of finding specific types of relationships
-                if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
-                    print("Relationships involving tools, materials, or locations:")
-                    print(f"  {main_edge}")
         
         print(f"Finished processing batch {i//batch_size + 1}")
+    
+    # Use pattern counter to output kinds of patterns found
+    print("\nPattern Analysis:")
+    pattern_counts = {}
+    for edge in hg.all():
+        pattern = edge.type()
+        if pattern in pattern_counts:
+            pattern_counts[pattern] += 1
+        else:
+            pattern_counts[pattern] = 1
+    
+    for pattern, count in sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True):
+        print(f"Pattern '{pattern}': {count} occurrences")
     
     return hg
 
