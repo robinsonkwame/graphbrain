@@ -1,68 +1,36 @@
-from graphbrain import hgraph
+from graphbrain.readers.txt import TxtReader
 from graphbrain.parsers import create_parser
-from graphbrain.processors import names
 from data_level_0 import examples
 
-import sys
-import spacy
-import graphbrain
-import tempfile
-import os
-import os
-
-def analyze_text(texts, batch_size=100):
+def analyze_text(texts):
     # Create a parser
     parser = create_parser(lang='en')
     
-    # Create a temporary file for the SQLite database
-    temp_file = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
-    db_path = os.path.abspath(temp_file.name)
-    temp_file.close()
+    # Create a TxtReader
+    reader = TxtReader(parser)
     
-    try:
-        # Create a hypergraph using SQLite with the full absolute path
-        hg = hgraph(f'sqlite:///{db_path}')
+    # Process texts
+    edges = []
+    for text in texts:
+        print(f"\nAnalyzing text: {text[:50]}...")  # Print first 50 characters
+        # Parse the text
+        parses = reader.read_text(text)
+        edges.extend(parses)
     
-        # Process texts in batches
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i+batch_size]
-            print(f"\nProcessing batch {i//batch_size + 1}")
-            
-            for text in batch:
-                print(f"\nAnalyzing text: {text[:50]}...")  # Print first 50 characters
-                # Parse the text
-                parse_result = parser.parse(text)
-                
-                # Process each parse in the result
-                for parse in parse_result['parses']:
-                    main_edge = parse['main_edge']
-                    
-                    # Add the main edge to the hypergraph
-                    hg.add(main_edge)
-            
-            print(f"Finished processing batch {i//batch_size + 1}")
-        
-        # Use pattern counter to output kinds of patterns found
-        print("\nPattern Analysis:")
-        pattern_counts = {}
-        for edge in hg.all():
-            pattern = edge.type()
-            if pattern in pattern_counts:
-                pattern_counts[pattern] += 1
-            else:
-                pattern_counts[pattern] = 1
-        
-        for pattern, count in sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True):
-            print(f"Pattern '{pattern}': {count} occurrences")
-        
-        return hg
-    finally:
-        # Close the hypergraph connection
-        if 'hg' in locals():
-            hg.close()
-        # Remove the temporary file
-        os.unlink(db_path)
-
+    # Use pattern counter to output kinds of patterns found
+    print("\nPattern Analysis:")
+    pattern_counts = {}
+    for edge in edges:
+        pattern = edge.type()
+        if pattern in pattern_counts:
+            pattern_counts[pattern] += 1
+        else:
+            pattern_counts[pattern] = 1
+    
+    for pattern, count in sorted(pattern_counts.items(), key=lambda x: x[1], reverse=True):
+        print(f"Pattern '{pattern}': {count} occurrences")
+    
+    return edges
 
 sample_text = examples
 
