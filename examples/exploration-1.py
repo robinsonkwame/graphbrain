@@ -6,17 +6,24 @@ from data_level_0 import examples
 import sys
 import spacy
 import graphbrain
+import tempfile
+import os
 
 def print_versions():
     print(f"Python version: {sys.version}")
     print(f"spaCy version: {spacy.__version__}")
+    print(f"GraphBrain version: {graphbrain.__version__}")
 
 def analyze_text(texts, batch_size=100):
     # Create a parser
     parser = create_parser(lang='en')
     
-    # Create a hypergraph
-    hg = hgraph('example')
+    # Create a temporary directory for the hypergraph
+    with tempfile.TemporaryDirectory() as temp_dir:
+        db_path = os.path.join(temp_dir, 'example_db')
+        
+        # Create a hypergraph
+        hg = hgraph(f'leveldb://{db_path}')
     
     # Process texts in batches
     for i in range(0, len(texts), batch_size):
