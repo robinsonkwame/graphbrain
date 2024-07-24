@@ -17,8 +17,8 @@ def analyze_text(texts, batch_size=100):
     with tempfile.NamedTemporaryFile(suffix='.db') as temp_file:
         db_path = temp_file.name
         
-        # Create a hypergraph using SQLite
-        hg = hgraph(f'sqlite://{db_path}')
+        # Create a hypergraph using SQLite with the full path
+        hg = hgraph(f'sqlite:///{db_path}')
     
     # Process texts in batches
     for i in range(0, len(texts), batch_size):
