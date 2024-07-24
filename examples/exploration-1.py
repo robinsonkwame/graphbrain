@@ -10,7 +10,7 @@ def analyze_text(text):
     # Extract hypergraph
     hg = Hypergraph()
     for parse in parses:
-        hg.add(parse['main_edge'])
+        hg.add(parse)
     
     # Find all edges (relationships)
     edges = list(hg.all())
