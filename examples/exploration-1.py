@@ -1,23 +1,20 @@
+import graphbrain
 from graphbrain import *
-from graphbrain.parsers import create_parser
 
 def analyze_text(text):
     # Parse the text
-    parser = create_parser(lang='en')
-    parses = list(parser.parse(text))
+    parser = graphbrain.parse_en(text)
     
-    # Create a knowledge graph
-    kg = KnowledgeGraph()
-    for parse in parses:
-        kg.add(parse)
+    # Extract hypergraph
+    hg = parser.hypergraph()
     
     # Find all edges (relationships)
-    edges = list(kg.all())
+    edges = list(hg.all())
     
     # Print all edges
     for edge in edges:
         print(f"Edge: {edge}")
-        print(f"  Main concepts: {main_concepts(edge)}")
+        print(f"  Main concepts: {edge.main_concepts()}")
         print(f"  Connector: {edge.connector()}")
         print()
 
