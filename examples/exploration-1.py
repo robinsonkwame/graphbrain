@@ -28,6 +28,9 @@ def analyze_text(texts, batch_size=100):
             for parse in parse_result['parses']:
                 main_edge = parse['main_edge']
                 
+                print(
+                    f" ... concept: \t{concept}"
+                )
                 # Example of finding specific types of relationships
                 if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
                     print("Relationships involving tools, materials, or locations:")
