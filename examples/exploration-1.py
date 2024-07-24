@@ -1,6 +1,7 @@
 from graphbrain import hypergraph
 from graphbrain.parsers import create_parser
 from graphbrain.processors import names
+from data_level_0 import examples
 
 import sys
 import spacy
@@ -59,12 +60,11 @@ def analyze_text(texts, batch_size=100):
     
     return hg
 
+
+sample_text = examples
+
 # Example usage
-sample_text = [
-"The carpenter used a hammer to drive nails into the wood in the workshop. ",
-"The carpenter used a hammer to drive nails into the wood in the workshop. ",
-"The sun rises in the east and sets in the west every day."
-]
+
 
 print_versions()
 
