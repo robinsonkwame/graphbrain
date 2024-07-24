@@ -8,6 +8,7 @@ import spacy
 import graphbrain
 import tempfile
 import os
+import os
 
 def analyze_text(texts, batch_size=100):
     # Create a parser
@@ -15,11 +16,11 @@ def analyze_text(texts, batch_size=100):
     
     # Create a temporary file for the SQLite database
     temp_file = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
-    db_path = temp_file.name
+    db_path = os.path.abspath(temp_file.name)
     temp_file.close()
     
     try:
-        # Create a hypergraph using SQLite with the full path
+        # Create a hypergraph using SQLite with the full absolute path
         hg = hgraph(f'sqlite:///{db_path}')
     
         # Process texts in batches
