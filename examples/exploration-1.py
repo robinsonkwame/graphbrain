@@ -18,27 +18,29 @@ def analyze_text(text):
     parse_result = parser.parse(text)
     
     # Print the parsed result
-    print(f"Parsed result: {parse_result}")
+    #print(f"Parsed result: {parse_result}")
     
     # Process each parse in the result
     for parse in parse_result['parses']:
         main_edge = parse['main_edge']
-        print(f"\nMain edge: {main_edge}")
-        print(f"  Main concepts: {names.main_concepts(main_edge)}")
-        print(f"  Connector: {main_edge[0] if len(main_edge) > 0 else 'N/A'}")
+        #print(f"\nMain edge: {main_edge}")
+        #print(f"  Main concepts: {names.main_concepts(main_edge)}")
+        #print(f"  Connector: {main_edge[0] if len(main_edge) > 0 else 'N/A'}")
         
         # Example of finding specific types of relationships
         if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
-            print("Relationships involving tools, materials, or locations:")
+            print("\n\nRelationships involving tools, materials, or locations:")
+            print(f"  {concept}")
             print(f"  {main_edge}")
     
     print()
 
 # Example usage
-sample_text = """
-The carpenter used a hammer to drive nails into the wood in the workshop. 
-The chef prepared the ingredients in the kitchen using a sharp knife.
-"""
+sample_text = [
+"The carpenter used a hammer to drive nails into the wood in the workshop. ",
+"The carpenter used a hammer to drive nails into the wood in the workshop. ",
+"The sun rises in the east and sets in the west every day."
+]
 
 print_versions()
 
