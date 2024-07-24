@@ -1,9 +1,9 @@
 from graphbrain import *
-from graphbrain.parsers import Parser
+from graphbrain.parsers import create_parser
 
 def analyze_text(text):
     # Parse the text
-    parser = Parser(lang='en')
+    parser = create_parser(lang='en')
     parses = list(parser.parse(text))
     
     # Extract hypergraph
