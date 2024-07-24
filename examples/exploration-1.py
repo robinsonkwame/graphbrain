@@ -1,12 +1,14 @@
-import graphbrain
 from graphbrain import *
 
 def analyze_text(text):
     # Parse the text
-    parser = graphbrain.parse_en(text)
+    parser = Parser(lang='en')
+    parses = list(parser.parse(text))
     
     # Extract hypergraph
-    hg = parser.hypergraph()
+    hg = Hypergraph()
+    for parse in parses:
+        hg.add(parse['main_edge'])
     
     # Find all edges (relationships)
     edges = list(hg.all())
@@ -14,7 +16,7 @@ def analyze_text(text):
     # Print all edges
     for edge in edges:
         print(f"Edge: {edge}")
-        print(f"  Main concepts: {edge.main_concepts()}")
+        print(f"  Main concepts: {main_concepts(edge)}")
         print(f"  Connector: {edge.connector()}")
         print()
 
