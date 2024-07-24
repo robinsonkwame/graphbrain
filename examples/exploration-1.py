@@ -15,14 +15,18 @@ def analyze_text(text):
     parser = create_parser(lang='en')
     
     # Parse the text
-    parses = parser.parse(text)
+    parse = parser.parse(text)
     
     # Create a hypergraph
     hg = hypergraph.Hypergraph()
     
-    # Add parsed edges to the hypergraph
-    for parse in parses:
-        hg.add(parse['main_edge'])
+    # Add parsed edge to the hypergraph
+    try:
+        hg.add(parse)
+    except Exception as e:
+        print(f"Error adding parse to hypergraph: {e}")
+        print(f"Parse output: {parse}")
+        return
     
     # Find all edges (relationships)
     edges = list(hg.all())
