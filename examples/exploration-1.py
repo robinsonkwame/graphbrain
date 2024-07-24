@@ -1,4 +1,5 @@
 from graphbrain import *
+from graphbrain.parsers import Parser
 
 def analyze_text(text):
     # Parse the text
