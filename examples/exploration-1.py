@@ -1,4 +1,4 @@
-from graphbrain import hypergraph
+from graphbrain import hgraph
 from graphbrain.parsers import create_parser
 from graphbrain.processors import names
 from data_level_0 import examples
@@ -16,7 +16,7 @@ def analyze_text(texts, batch_size=100):
     parser = create_parser(lang='en')
     
     # Create a hypergraph
-    hg = hypergraph('example')
+    hg = hgraph('example')
     
     # Process texts in batches
     for i in range(0, len(texts), batch_size):
