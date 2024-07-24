@@ -14,6 +14,9 @@ def analyze_text(texts, batch_size=100):
     # Create a parser
     parser = create_parser(lang='en')
     
+    # Create a hypergraph
+    hg = hypergraph('example')
+    
     # Process texts in batches
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i+batch_size]
@@ -28,15 +31,33 @@ def analyze_text(texts, batch_size=100):
             for parse in parse_result['parses']:
                 main_edge = parse['main_edge']
                 
-                print(
-                    f" ... concept: \t{concept}"
-                )
+                # Add the main edge to the hypergraph
+                hg.add(main_edge)
+                
+                print(f"Main edge: {main_edge}")
+                
+                # Analyze the structure of the main edge
+                if main_edge.type() == 'R':
+                    predicate = main_edge[0]
+                    print(f"Predicate: {predicate}")
+                    
+                    # Check for argument roles
+                    if isinstance(predicate, str) and '.' in predicate:
+                        _, roles = predicate.split('.', 1)
+                        print(f"Argument roles: {roles}")
+                    
+                    # Analyze arguments
+                    for i, arg in enumerate(main_edge[1:], 1):
+                        print(f"Argument {i}: {arg} (type: {arg.type()})")
+                
                 # Example of finding specific types of relationships
                 if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
                     print("Relationships involving tools, materials, or locations:")
                     print(f"  {main_edge}")
         
         print(f"Finished processing batch {i//batch_size + 1}")
+    
+    return hg
 
 # Example usage
 sample_text = [
