@@ -4,12 +4,26 @@ import sqlite3
 # Database file path
 db_path = 'examples/text.db'
 
+# Check if the database file exists
+if not os.path.exists(db_path):
+    print(f"Database file does not exist: {db_path}")
+    exit(1)
+
 # Check database file size
-print(f"Database file size: {os.path.getsize(db_path)} bytes")
+file_size = os.path.getsize(db_path)
+print(f"Database file size: {file_size} bytes")
+
+if file_size == 0:
+    print("Warning: Database file is empty.")
+    exit(1)
 
 # Connect to the SQLite database
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
+try:
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+except sqlite3.Error as e:
+    print(f"Error connecting to database: {e}")
+    exit(1)
 
 # Function to dump table schema
 def dump_table_schema(cursor, table_name):
