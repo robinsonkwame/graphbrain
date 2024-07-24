@@ -10,30 +10,31 @@ def print_versions():
     print(f"Python version: {sys.version}")
     print(f"spaCy version: {spacy.__version__}")
 
-def analyze_text(text):
+def analyze_text(texts):
     # Create a parser
     parser = create_parser(lang='en')
     
-    # Parse the text
-    parse_result = parser.parse(text)
-    
-    # Print the parsed result
-    #print(f"Parsed result: {parse_result}")
-    
-    # Process each parse in the result
-    for parse in parse_result['parses']:
-        main_edge = parse['main_edge']
-        #print(f"\nMain edge: {main_edge}")
-        #print(f"  Main concepts: {names.main_concepts(main_edge)}")
-        #print(f"  Connector: {main_edge[0] if len(main_edge) > 0 else 'N/A'}")
+    for text in texts:
+        print(f"\nAnalyzing text: {text}")
+        # Parse the text
+        parse_result = parser.parse(text)
         
-        # Example of finding specific types of relationships
-        if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
-            print("\n\nRelationships involving tools, materials, or locations:")
-            print(f"  {concept}")
-            print(f"  {main_edge}")
-    
-    print()
+        # Print the parsed result
+        #print(f"Parsed result: {parse_result}")
+        
+        # Process each parse in the result
+        for parse in parse_result['parses']:
+            main_edge = parse['main_edge']
+            #print(f"\nMain edge: {main_edge}")
+            #print(f"  Main concepts: {names.main_concepts(main_edge)}")
+            #print(f"  Connector: {main_edge[0] if len(main_edge) > 0 else 'N/A'}")
+            
+            # Example of finding specific types of relationships
+            if any(concept in str(main_edge).lower() for concept in ['tool', 'material', 'location']):
+                print("\nRelationships involving tools, materials, or locations:")
+                print(f"  {main_edge}")
+        
+        print()
 
 # Example usage
 sample_text = [
