@@ -2,6 +2,14 @@ from graphbrain import hypergraph
 from graphbrain.parsers import create_parser
 from graphbrain.processors import names
 
+import sys
+import spacy
+import graphbrain
+
+def print_versions():
+    print(f"Python version: {sys.version}")
+    print(f"spaCy version: {spacy.__version__}")
+
 def analyze_text(text):
     # Create a parser
     parser = create_parser(lang='en')
@@ -41,5 +49,7 @@ sample_text = """
 The carpenter used a hammer to drive nails into the wood in the workshop. 
 The chef prepared the ingredients in the kitchen using a sharp knife.
 """
+
+print_versions()
 
 analyze_text(sample_text)
