@@ -8,11 +8,28 @@ import os
 import tempfile
 import hashlib
 import pickle
+import time
 from datetime import datetime
 from pathlib import Path
 from graphbrain import hgraph
 from graphbrain.parsers import create_parser
+from collections import defaultdict
 
+# Global dictionary to store timing information
+timing_info = defaultdict(float)
+
+def time_function(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        timing_info[func.__name__] += elapsed_time
+        print(f"[Line {func.__code__.co_firstlineno}] {func.__name__} took {elapsed_time:.2f} seconds")
+        return result
+    return wrapper
+
+@time_function
 def process_file(input_file, output_dir, matches_key, headline_key, text_key):
     output_file = Path(output_dir) / f"{input_file.stem}.db"
     hg = hgraph(str(output_file))
@@ -29,11 +46,13 @@ def process_file(input_file, output_dir, matches_key, headline_key, text_key):
     hg.close()
     return str(output_file), text
 
+@time_function
 def add_to_main_db(main_db, db_file):
     source_hg = hgraph(db_file)
     for edge in source_hg.all():
         main_db.add(edge)
 
+@time_function
 def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     input_path = Path(input_dir)
     output_path = Path(output_dir)
@@ -58,6 +77,7 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
             add_to_main_db(main_db, db_file)
             print(f"  Added to main database")
             
+            start_time = time.time()
             with open(file, 'r') as f:
                 line_count = 0
                 for line in f:
@@ -69,7 +89,10 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
                         'file': str(db_file)
                     }
                     line_count += 1
-                print(f"  Processed {line_count} lines")
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            timing_info['process_lookup_table'] += elapsed_time
+            print(f"  Processed {line_count} lines in {elapsed_time:.2f} seconds")
         except Exception as e:
             print(f"  Error processing file: {e}")
             errors.append({'file': str(file), 'error': str(e)})
@@ -83,20 +106,36 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     print("Closing main database...")
     main_db.close()
     
+    start_time = time.time()
     lookup_table_file = output_path / f"lookup_table_{timestamp}.pkl"
     with open(lookup_table_file, 'wb') as f:
         pickle.dump(lookup_table, f)
-    print(f"Lookup table saved: {lookup_table_file}")
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    timing_info['save_lookup_table'] += elapsed_time
+    print(f"Lookup table saved: {lookup_table_file} in {elapsed_time:.2f} seconds")
     
     print(f"Total entries in lookup table: {len(lookup_table)}")
     
     # Verify the contents of the main database
     print("Verifying main database contents...")
+    start_time = time.time()
     main_db = hgraph(str(main_db_file))
     edge_count = sum(1 for _ in main_db.all())
-    print(f"Total edges in main database: {edge_count}")
     main_db.close()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    timing_info['verify_main_db'] += elapsed_time
+    print(f"Total edges in main database: {edge_count}")
+    print(f"Verification completed in {elapsed_time:.2f} seconds")
+    
+    # Print sorted summary of timing information
+    print("\nTiming Summary:")
+    sorted_timing = sorted(timing_info.items(), key=lambda x: x[1], reverse=True)
+    for func_name, total_time in sorted_timing:
+        print(f"{func_name}: {total_time:.2f} seconds")
 
+@time_function
 def main(input_dir, output_dir, matches_key, headline_key, text_key):
     main_test(input_dir, output_dir, matches_key, headline_key, text_key)
 
@@ -110,4 +149,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
+    start_time = time.time()
     main(args.input_dir, args.output_dir, args.matches_key, args.headline_key, args.text_key)
+    end_time = time.time()
+    total_time = end_time - start_time
+    print(f"\nTotal execution time: {total_time:.2f} seconds")
