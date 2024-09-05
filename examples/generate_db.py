@@ -31,7 +31,7 @@ def add_to_main_db(main_db, db_file):
     for edge in source_hg.all():
         main_db.add(edge)
 
-def main(input_dir, output_dir, matches_key, headline_key, text_key):
+def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -42,12 +42,21 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
     lookup_table = {}
     errors = []
     
+    print(f"Input directory: {input_path}")
+    print(f"Output directory: {output_path}")
+    print(f"Main database file: {main_db_file}")
+    
     for file in input_path.glob('*.wiki.jsonl'):
+        print(f"Processing file: {file}")
         try:
             db_file, _ = process_file(file, output_path, matches_key, headline_key, text_key)
+            print(f"  Created database file: {db_file}")
+            
             add_to_main_db(main_db, db_file)
+            print(f"  Added to main database")
             
             with open(file, 'r') as f:
+                line_count = 0
                 for line in f:
                     data = json.loads(line)
                     text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
@@ -56,18 +65,37 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
                         'metadata': data,
                         'file': str(db_file)
                     }
+                    line_count += 1
+                print(f"  Processed {line_count} lines")
         except Exception as e:
+            print(f"  Error processing file: {e}")
             errors.append({'file': str(file), 'error': str(e)})
     
     if errors:
-        with open(output_path / 'errors.json', 'w') as f:
+        error_file = output_path / 'errors.json'
+        with open(error_file, 'w') as f:
             json.dump(errors, f, indent=2)
+        print(f"Errors encountered. See {error_file}")
     
+    print("Closing main database...")
     main_db.close()
     
     lookup_table_file = output_path / f"lookup_table_{timestamp}.pkl"
     with open(lookup_table_file, 'wb') as f:
         pickle.dump(lookup_table, f)
+    print(f"Lookup table saved: {lookup_table_file}")
+    
+    print(f"Total entries in lookup table: {len(lookup_table)}")
+    
+    # Verify the contents of the main database
+    print("Verifying main database contents...")
+    main_db = hgraph(str(main_db_file))
+    edge_count = sum(1 for _ in main_db.all())
+    print(f"Total edges in main database: {edge_count}")
+    main_db.close()
+
+def main(input_dir, output_dir, matches_key, headline_key, text_key):
+    main_test(input_dir, output_dir, matches_key, headline_key, text_key)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process wiki.jsonl files and create graph brain databases")
