@@ -69,7 +69,7 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     print(f"Main database file: {main_db_file}")                                                                            
                                                                                                                             
     # Create parser once                                                                                                    
-    parser = create_parser(lang='en', parser_class='en_core_web_sm')                                                        
+    parser = create_parser(lang='en')
                                                                                                                             
     # Get list of files to process                                                                                          
     files = list(input_path.glob('*.wiki.jsonl'))                                                                           
