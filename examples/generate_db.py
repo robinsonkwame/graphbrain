@@ -13,6 +13,7 @@ from functools import partial
 import time
 from statistics import median
 from tqdm import tqdm
+import psutil
                                                                                                                             
 def process_batch(batch, parser, hg):                                                                                       
     for item in batch:                                                                                                      
@@ -75,13 +76,18 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     files = list(input_path.glob('*.wiki.jsonl'))                                                                           
                                                                                                                             
     # Use multiprocessing to process files                                                                                  
-    num_processes = mp.cpu_count()                                                                                          
+    num_processes = psutil.cpu_count(logical=False) - 1  # Use one less than the number of physical cores
+    print(f"Using {num_processes} processes")
     pool = mp.Pool(processes=num_processes)                                                                                 
     chunk_size = len(files) // num_processes + 1                                                                            
     file_chunks = [files[i:i+chunk_size] for i in range(0, len(files), chunk_size)]                                         
                                                                                                                             
     process_func = partial(process_files, output_dir=output_path, parser=parser)                                            
     results = pool.map(process_func, file_chunks)                                                                           
+    
+    # Close the pool and wait for all processes to finish
+    pool.close()
+    pool.join()
                                                                                                                             
     # Flatten results                                                                                                       
     all_results = [item for sublist in results for item in sublist]                                                         
