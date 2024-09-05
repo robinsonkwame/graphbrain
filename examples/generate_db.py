@@ -11,20 +11,19 @@ from graphbrain import hgraph
 from graphbrain.parsers import create_parser
 
 def process_file(input_file, output_dir, matches_key, headline_key, text_key):
-    with open(input_file, 'r') as f:
-        data = json.load(f)
-    
-    text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
-    
-    with tempfile.NamedTemporaryFile(mode='w', delete=False) as temp_file:
-        temp_file.write(text)
-    
     output_file = Path(output_dir) / f"{input_file.stem}.db"
+    hg = hgraph(str(output_file))
+    parser = create_parser(lang='en')
     
-    os.system(f"graphbrain txt --infile {temp_file.name} --hg {output_file} --lang en")
+    with open(input_file, 'r') as f:
+        for line in f:
+            data = json.loads(line)
+            text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
+            
+            # Parse and add the text to the hypergraph
+            parser.parse_and_add(text, hg)
     
-    os.unlink(temp_file.name)
-    
+    hg.close()
     return output_file, text
 
 def add_to_main_db(main_db, db_file):
@@ -43,18 +42,20 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
     lookup_table = {}
     errors = []
     
-    for file in input_path.glob('*.wiki.json'):
+    for file in input_path.glob('*.wiki.jsonl'):
         try:
-            db_file, text = process_file(file, output_path, matches_key, headline_key, text_key)
+            db_file, _ = process_file(file, output_path, matches_key, headline_key, text_key)
             add_to_main_db(main_db, db_file)
             
-            text_hash = hashlib.sha256(text.encode()).hexdigest()
             with open(file, 'r') as f:
-                metadata = json.load(f)
-            lookup_table[text_hash] = {
-                'metadata': metadata,
-                'file': str(db_file)
-            }
+                for line in f:
+                    data = json.loads(line)
+                    text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
+                    text_hash = hashlib.sha256(text.encode()).hexdigest()
+                    lookup_table[text_hash] = {
+                        'metadata': data,
+                        'file': str(db_file)
+                    }
         except Exception as e:
             errors.append({'file': str(file), 'error': str(e)})
     
@@ -69,8 +70,8 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
         pickle.dump(lookup_table, f)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process wiki.json files and create graph brain databases")
-    parser.add_argument("input_dir", help="Input directory containing *.wiki.json files")
+    parser = argparse.ArgumentParser(description="Process wiki.jsonl files and create graph brain databases")
+    parser.add_argument("input_dir", help="Input directory containing *.wiki.jsonl files")
     parser.add_argument("--output_dir", default="out", help="Output directory for databases and lookup table")
     parser.add_argument("--matches_key", default="matches", help="Key for matches in the JSON file")
     parser.add_argument("--headline_key", default="headline", help="Key for headline in the JSON file")
