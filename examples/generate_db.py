@@ -24,7 +24,7 @@ def process_file(input_file, output_dir, matches_key, headline_key, text_key):
             parser.parse_and_add(text, hg)
     
     hg.close()
-    return output_file, text
+    return str(output_file), text
 
 def add_to_main_db(main_db, db_file):
     source_hg = hgraph(db_file)
