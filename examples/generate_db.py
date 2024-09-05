@@ -76,7 +76,7 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     files = list(input_path.glob('*.wiki.jsonl'))                                                                           
                                                                                                                             
     # Use multiprocessing to process files                                                                                  
-    num_processes = psutil.cpu_count(logical=False) - 1  # Use one less than the number of physical cores
+    num_processes = 1 #psutil.cpu_count(logical=False) - 1  # Use one less than the number of physical cores
     print(f"Using {num_processes} processes")
     pool = mp.Pool(processes=num_processes)                                                                                 
     chunk_size = len(files) // num_processes + 1                                                                            
