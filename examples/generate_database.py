@@ -36,46 +36,39 @@ def process_file(input_file, output_dir, matches_key, headline_key, text_key):
     parser = create_parser(lang='en')
     
     with open(input_file, 'r') as f:
-        for line in f:
-            data = json.loads(line)
-            text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
-            
-            # Parse and add the text to the hypergraph
-            parser.parse_and_add(text, hg)
+        for line_number, line in enumerate(f, 1):
+            try:
+                data = json.loads(line)
+                text = f"{data.get(headline_key, '')}\n\n{data.get(text_key, '')}"
+                
+                # Parse and add the text to the hypergraph
+                parser.parse_and_add(text, hg)
+            except Exception as e:
+                print(f"Error processing line {line_number} in file {input_file}: {str(e)}")
+                # Optionally, you can log the error or skip the problematic line
+                continue
     
     hg.close()
-    return str(output_file), text
+    return str(output_file)
 
 @time_function
-def add_to_main_db(main_db, db_file):
-    source_hg = hgraph(db_file)
-    for edge in source_hg.all():
-        main_db.add(edge)
-
-@time_function
-def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
+def main_process(input_dir, output_dir, matches_key, headline_key, text_key):
     input_path = Path(input_dir)
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    main_db_file = output_path / f"main_{timestamp}.db"
-    main_db = hgraph(str(main_db_file))
     lookup_table = {}
     errors = []
     
     print(f"Input directory: {input_path}")
     print(f"Output directory: {output_path}")
-    print(f"Main database file: {main_db_file}")
     
     for file in input_path.glob('*.wiki.jsonl'):
         print(f"Processing file: {file}")
         try:
-            db_file, _ = process_file(file, output_path, matches_key, headline_key, text_key)
-            print(f"  Created database file: {db_file}")
-            
-            add_to_main_db(main_db, db_file)
-            print(f"  Added to main database")
+            output_file = process_file(file, output_path, matches_key, headline_key, text_key)
+            print(f"  Created output file: {output_file}")
             
             start_time = time.time()
             with open(file, 'r') as f:
@@ -86,7 +79,7 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
                     text_hash = hashlib.sha256(text.encode()).hexdigest()
                     lookup_table[text_hash] = {
                         'metadata': data,
-                        'file': str(db_file)
+                        'file': str(output_file)
                     }
                     line_count += 1
             end_time = time.time()
@@ -103,9 +96,6 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
             json.dump(errors, f, indent=2)
         print(f"Errors encountered. See {error_file}")
     
-    print("Closing main database...")
-    main_db.close()
-    
     start_time = time.time()
     lookup_table_file = output_path / f"lookup_table_{timestamp}.pkl"
     with open(lookup_table_file, 'wb') as f:
@@ -117,18 +107,6 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
     
     print(f"Total entries in lookup table: {len(lookup_table)}")
     
-    # Verify the contents of the main database
-    print("Verifying main database contents...")
-    start_time = time.time()
-    main_db = hgraph(str(main_db_file))
-    edge_count = sum(1 for _ in main_db.all())
-    main_db.close()
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    timing_info['verify_main_db'] += elapsed_time
-    print(f"Total edges in main database: {edge_count}")
-    print(f"Verification completed in {elapsed_time:.2f} seconds")
-    
     # Print sorted summary of timing information
     print("\nTiming Summary:")
     sorted_timing = sorted(timing_info.items(), key=lambda x: x[1], reverse=True)
@@ -137,7 +115,7 @@ def main_test(input_dir, output_dir, matches_key, headline_key, text_key):
 
 @time_function
 def main(input_dir, output_dir, matches_key, headline_key, text_key):
-    main_test(input_dir, output_dir, matches_key, headline_key, text_key)
+    main_process(input_dir, output_dir, matches_key, headline_key, text_key)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process wiki.jsonl files and create graph brain databases")

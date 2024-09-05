@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Default values
+NUM_PROCESSES=3
+SHUTDOWN=false
+
+# Function to display usage
+usage() {
+    echo "Usage: $0 -i <input_directory> [-n <num_processes>] [-s] [-h]"
+    echo "  -i <input_directory>  : Directory containing input JSONL files"
+    echo "  -n <num_processes>    : Number of parallel processes (default: 3)"
+    echo "  -s                    : Shutdown system when done (default: false)"
+    echo "  -h                    : Display this help message"
+    exit 1
+}
+
+# Parse command-line options
+while getopts "i:n:sh" opt; do
+    case $opt in
+        i) INPUT_DIR="$OPTARG" ;;
+        n) NUM_PROCESSES="$OPTARG" ;;
+        s) SHUTDOWN=true ;;
+        h) usage ;;
+        \?) usage ;;
+    esac
+done
+
+# Check if input directory is provided
+if [ -z "$INPUT_DIR" ]; then
+    echo "Error: Input directory is required."
+    usage
+fi
+
+# Check if input directory exists
+if [ ! -d "$INPUT_DIR" ]; then
+    echo "Error: Input directory does not exist."
+    exit 1
+fi
+
+# Function to check system resources
+check_resources() {
+    # Check available memory (in MB)
+    available_memory=$(free -m | awk '/^Mem:/{print $7}')
+    
+    # Check available disk space (in MB)
+    available_disk=$(df -m . | awk 'NR==2 {print $4}')
+    
+    # Adjust NUM_PROCESSES if necessary
+    while [ $((available_memory / NUM_PROCESSES)) -lt 1024 ] || [ $((available_disk / NUM_PROCESSES)) -lt 1024 ]; do
+        NUM_PROCESSES=$((NUM_PROCESSES - 1))
+        if [ $NUM_PROCESSES -lt 1 ]; then
+            echo "Error: Not enough system resources to run the script."
+            exit 1
+        fi
+    done
+    
+    echo "Running with $NUM_PROCESSES parallel processes"
+}
+
+# Check system resources
+check_resources
+
+# Process files in parallel
+find "$INPUT_DIR" -name "*.jsonl" | xargs -P "$NUM_PROCESSES" -I {} python examples/generate_database.py {} --output_dir "$INPUT_DIR"
+
+echo "Processing complete. Results are in $INPUT_DIR"
+
+# Shutdown if requested
+if [ "$SHUTDOWN" = true ]; then
+    echo "Shutting down the system..."
+    sudo shutdown -h now
+fi
