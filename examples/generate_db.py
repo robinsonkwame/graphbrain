@@ -37,7 +37,9 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    main_db = hgraph()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    main_db_file = output_path / f"main_{timestamp}.db"
+    main_db = hgraph(str(main_db_file))
     lookup_table = {}
     errors = []
     
@@ -60,9 +62,7 @@ def main(input_dir, output_dir, matches_key, headline_key, text_key):
         with open(output_path / 'errors.json', 'w') as f:
             json.dump(errors, f, indent=2)
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    main_db_file = output_path / f"main_{timestamp}.db"
-    main_db.save(main_db_file)
+    main_db.close()
     
     lookup_table_file = output_path / f"lookup_table_{timestamp}.pkl"
     with open(lookup_table_file, 'wb') as f:
